@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css"> -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+<!-- <link rel="stylesheet" href="modalStyles.css"> -->
+
+<!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+
+<!-- jQuery должен идти перед Bootstrap JS и Popper.js -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+
+
+<style>
+    body {
+    font-family: 'Arial', sans-serif;
+    background-color: #f4f4f4;
+    margin: 0;
+    padding: 0;
+}
+
+h1 {
+    text-align: center;
+    margin-top: 20px;
+    color: #333;
+}
+
+form {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+label {
+    margin-right: 10px;
+}
+
+input[type="text"], select, textarea {
+    flex: 1;
+    margin-right: 10px;
+    max-width: 180px;
+}
+
+button {
+    cursor: pointer;
+}
+
+.tooltip-icon {
+    margin-left: 10px;
+}
+
+.editBtn, .addButton, .submit {
+    border: none;
+    background: none;
+    font-size: 1.5rem;
+    margin-right: 10px;
+}
+
+.submit {
+    float: right;
+}
+
+
+/* Tooltip styles */
+
+.tooltip-icon {
+    position: relative;
+    cursor: pointer;
+}
+
+.tooltip-icon:hover::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    left: 100%; 
+    top: 50%;
+    transform: translateY(-50%);
+    background-color: rgb(123, 118, 118);
+    color: rgb(22, 238, 14);
+    border-radius: 15px;
+    padding: 15px 15px;
+    white-space: nowrap;
+    font-size: 14px;
+    z-index: 1;
+}
+
+
+</style>
+    
+<style>
+    .modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0,0,0,0.7);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-content {
+    max-width: 400px;
+    min-height: 300px;
+    background: #fff;
+    padding: 20px;
+    border-radius: 15px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+
+.modal-content h2 {
+    border-bottom: 2px solid #333;
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+    font-size: 24px;
+}
+
+.modal-content label,
+.modal-content input,
+.modal-content textarea {
+    display: block;
+    width: 100%;
+    margin-bottom: 15px;
+    box-sizing: border-box;
+}
+
+.modal-content button {
+    background-color: #333;
+    color: #fff;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    margin-right: 10px;
+    transition: background-color 0.3s;
+}
+
+.modal-content button:hover {
+    background-color: #555;
+}
+
+.modal-content button:last-child {
+    margin-right: 0;
+}
+
+.modal-content {
+    position: relative;
+    margin: auto;
+}
+
+
+</style>    
+   
+<title>Dashboard</title>
+    
+
+
+</head>
+<body>
+    <h1>Dashboard</h1>
+
+    <form id="scanForm" class="container mt-3">
+        <div class="form-row align-items-center">
+            <!-- IP Address or Domain input -->
+            <div class="col-md-3">
+                <label for="ipOrDomain">IP Address or Domain:</label>
+                <input type="text" class="form-control" id="ipOrDomain" name="ipOrDomain" required>
+            </div>
+            
+            <!-- Tool dropdown -->
+            <div class="col-md-3">
+                <label for="tool">Tools:</label>
+                <select class="form-control" id="tool" name="tool">
+                    {{ range .toolsList }}
+                    {{ if eq .toolsid 1 }}
+                    <option value="{{ .name }}">{{ .name }}</option>
+                    {{ end }}
+                    {{ end }}
+                </select>
+            </div>
+    
+            <!-- Profile dropdown -->
+            <div class="col-md-3">
+                <label for="profile">Profile:</label>
+                <select class="form-control" id="profile" name="profile">
+                    {{ range .profiles }}
+                    <option value="{{ . }}">{{ . }}</option>
+                    {{ end }}
+                </select>
+            </div>
+            
+            <!-- Tooltip icon -->
+            <i class="fa fa-eye tooltip-icon" data-tooltip="{{ .nmaphelp }}"></i>
+            
+            <!-- Edit button -->
+            <div class="col-auto">
+                <button class="btn btn-secondary" id="editBtn"><i class="fas fa-cog"></i></button>
+            </div>
+    
+            <!-- Add button -->
+            <div class="col-auto">
+                <button class="btn btn-primary addButton"><i class="fas fa-plus-circle"></i></button>
+            </div>
+    
+            <!-- Submit button -->
+            <div class="col-auto">
+                <button class="btn btn-success submit"><i class="fas fa-search"></i></button>
+            </div>
+        </div>
+    </form>
+    
+    
+    
+
+
+    <div class="modal" id="editModal" draggable="true">
+        <div class="modal-content cmd-style" draggable="true">
+            <h2>Edit Nmap Command</h2>
+            
+            <!-- Добавляем поля для редактирования Profile Name -->
+            <label for="profileName">Profile Name:</label>
+            <input type="text" id="profileName" name="nmapprofile" required>
+    
+            <!-- Добавляем поля для редактирования Arguments -->
+            <label for="arguments">Arguments:</label>
+            <input type="text" id="arguments" name="nmapstring"  required>
+    
+            <!-- Добавляем поля для редактирования Help -->
+            <label for="help">Help:</label>
+            <textarea id="help" name="nmaphelp"  required></textarea>
+    
+            <button id="saveEdit" >Save</button>
+            <button id="cancelChanges">Cancel</button>
+        </div>
+    </div>
+    
+    
+
+<script>
+        $(document).ready(function() {
+
+// Сохраняем информацию о сканировании
+    $("#scanForm").submit(function(event) {
+    event.preventDefault();
+
+    let ipOrDomain = $("#ipOrDomain").val();
+    let profile = $("#profile").val();
+
+    $.ajax({
+        url: '/saveScanDetails',
+        type: 'POST',
+        data: JSON.stringify({
+            ipOrDomain: ipOrDomain,
+            profile: profile
+        }),
+        contentType: 'application/json',
+        success: function(response) {
+            alert('Data saved successfully');
+        },
+        error: function(error) {
+            console.error(error);
+            alert('Error saving data. Please try again.');
+        }
+    });
+});
+
+// Обновление данных при выборе другого профиля
+$("#profile").change(function() {
+    let selectedProfile = $(this).val();
+
+    $.ajax({
+        url: '/getNmapString?profile=' + selectedProfile,
+        type: 'GET',
+        success: function(response) {
+            $(".tooltip-icon").attr("data-tooltip", response.nmaphelp);
+        },
+        error: function(error) {
+            console.error(error);
+        }
+    });
+});
+
+// Редактирование данных профиля
+$("#editBtn").click(function() {
+    let selectedProfile = $("#profile").val();
+
+    $.ajax({
+        url: '/getNmapString?profile=' + selectedProfile,
+        type: 'GET',
+        success: function(response) {
+            // Предполагаем, что сервер возвращает поля: id, nmapprofile, nmapString, nmaphelp
+            $("#profile").data("id", response.id);
+            $("#profileName").val(response.nmapprofile);
+            $("#arguments").val(response.nmapstring);
+            $("#help").val(response.nmaphelp);
+            $("#editModal").show();
+        },
+        error: function(error) {
+            console.error(error);
+        }
+    });
+});
+
+// Сохранение редактированных данных
+$("#saveEdit").click(function() {
+    let editedId = $("#profile").data("id");
+    let editedProfileName = $("#profileName").val();
+    let editedArguments = $("#arguments").val();
+    let editedHelp = $("#help").val();
+
+    $.ajax({
+        url: '/updateNmapString',
+        type: 'POST',
+        data: JSON.stringify({
+            id: editedId,
+            nmapprofile: editedProfileName,
+            nmapstring: editedArguments,
+            nmaphelp: editedHelp
+        }),
+        contentType: 'application/json',
+        success: function(response) {
+            alert('Command updated successfully');
+            $("#editModal").hide();
+        },
+        error: function(error) {
+            console.error(error);
+            alert('Error updating command. Please try again.');
+        }
+    });
+});
+
+// Закрыть модальное окно без сохранения изменений
+$("#cancelChanges").click(function() {
+    $("#editModal").hide();
+});
+
+});
+
+    
+</script>
+
+</body>
+</html>

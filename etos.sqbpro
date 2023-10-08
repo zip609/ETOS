@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?><sqlb_project><db path="C:/Users/zip/Desktop/Codes/GO/ETOS/etos.db" readonly="0" foreign_keys="1" case_sensitive_like="0" temp_store="0" wal_autocheckpoint="1000" synchronous="2"/><attached/><window><main_tabs open="structure browser pragmas query" current="1"/></window><tab_structure><column_width id="0" width="300"/><column_width id="1" width="0"/><column_width id="2" width="150"/><column_width id="3" width="3198"/><column_width id="4" width="0"/><expanded_item id="0" parent="1"/><expanded_item id="1" parent="1"/><expanded_item id="2" parent="1"/><expanded_item id="3" parent="1"/></tab_structure><tab_browse><current_table name="4,5:mainHydra"/><default_encoding codec=""/><browse_table_settings><table schema="main" name="Foundservice" show_row_id="0" encoding="" plot_x_axis="" unlock_view_pk="_rowid_"><sort/><column_widths><column index="1" value="162"/><column index="2" value="133"/><column index="3" value="140"/><column index="4" value="151"/></column_widths><filter_values/><conditional_formats/><row_id_formats/><display_formats/><hidden_columns/><plot_y_axes/><global_filter/></table><table schema="main" name="Hydra" show_row_id="0" encoding="" plot_x_axis="" unlock_view_pk="_rowid_"><sort/><column_widths><column index="1" value="61"/><column index="2" value="78"/><column index="3" value="71"/><column index="4" value="61"/></column_widths><filter_values/><conditional_formats/><row_id_formats/><display_formats/><hidden_columns/><plot_y_axes/><global_filter/></table></browse_table_settings></tab_browse><tab_sql><sql name="sql.sql">-- Таблица настроек
+CREATE TABLE Settings (
+    id INTEGER PRIMARY KEY,
+    listenip TEXT NOT NULL,
+    port INTEGER NOT NULL,
+    allowip TEXT
+);
+
+-- Таблица пользователей
+CREATE TABLE Users (
+    userid INTEGER PRIMARY KEY,
+    username TEXT NOT NULL UNIQUE,
+    password TEXT NOT NULL,
+    role TEXT NOT NULL,
+    lastaccess DATETIME,
+    datecreate DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Таблица прокси
+CREATE TABLE Proxys (
+    proxyid INTEGER PRIMARY KEY,
+    proxyaddr TEXT NOT NULL,
+    proxyauth TEXT,
+    lastusage DATETIME,
+    lastcheck DATETIME,
+    status TEXT
+);
+
+-- Таблица списка пользователей
+CREATE TABLE Userlist (
+    dictnameid INTEGER PRIMARY KEY,
+    dictname TEXT NOT NULL,
+    dictnamepath TEXT NOT NULL
+);
+
+-- Таблица списка паролей
+CREATE TABLE Passlist (
+    dictpassid INTEGER PRIMARY KEY,
+    dictpass TEXT NOT NULL,
+    dictpasspath TEXT NOT NULL
+);
+
+-- Таблица VPN
+CREATE TABLE Vpn (
+    id INTEGER PRIMARY KEY,
+    wgprofile TEXT NOT NULL,
+    wgconfig TEXT NOT NULL
+);
+
+-- Таблица Ngrok
+CREATE TABLE Ngrok (
+    id INTEGER PRIMARY KEY,
+    ngprofile TEXT NOT NULL,
+    ngconfig TEXT NOT NULL
+);
+
+-- Таблица логов
+CREATE TABLE Logs (
+    id INTEGER PRIMARY KEY,
+    logdate DATETIME DEFAULT CURRENT_TIMESTAMP,
+    logdata TEXT NOT NULL
+);
+
+-- Таблица Nmap
+CREATE TABLE Nmap (
+    id INTEGER PRIMARY KEY,
+    nmapprofile TEXT NOT NULL,
+    nmapstring TEXT NOT NULL,
+	nmaphelp TEXT NOT NULL
+);
+
+-- Таблица Masscan
+CREATE TABLE Masscan (
+    id INTEGER PRIMARY KEY,
+    masscanprofile TEXT NOT NULL,
+    masscanstring TEXT NOT NULL
+);
+
+-- Таблица Hydra
+CREATE TABLE Hydra (
+    id INTEGER PRIMARY KEY,
+    hydraprofile TEXT NOT NULL,
+	hydrastring TEXT NOT NULL
+);
+
+-- Таблица основных источников
+CREATE TABLE Main_source (
+    maintargetid INTEGER PRIMARY KEY,
+    maintargetip TEXT NOT NULL,
+    maintargetname TEXT NOT NULL
+);
+
+-- Таблица второстепенных источников
+CREATE TABLE Second_source (
+    id INTEGER PRIMARY KEY,
+    maintargetid INTEGER,
+    secondtargetid INTEGER,
+    secondtargetip TEXT,
+    secondtargetname TEXT,
+    FOREIGN KEY(maintargetid) REFERENCES Main_source(maintargetid)
+);
+
+-- Таблица обнаруженных сервисов
+CREATE TABLE Foundservice (
+    foundserviceid INTEGER PRIMARY KEY,
+    portnumber INTEGER NOT NULL,
+    servicename TEXT NOT NULL,
+    servicedetails TEXT
+);
+
+-- Таблица результатов
+CREATE TABLE Result (
+    resultid INTEGER PRIMARY KEY,
+    maintargetid INTEGER,
+    secondtargetid INTEGER,
+    foundserviceid INTEGER,
+    resultdata TEXT,
+    FOREIGN KEY(maintargetid) REFERENCES Main_source(maintargetid),
+    FOREIGN KEY(secondtargetid) REFERENCES Second_source(id),
+    FOREIGN KEY(foundserviceid) REFERENCES Foundservice(foundserviceid)
+);
+</sql><current_tab id="0"/></tab_sql></sqlb_project>
